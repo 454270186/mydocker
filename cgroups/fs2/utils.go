@@ -24,7 +24,7 @@ func getCgroupPath(cgroupPath string, autoCreated bool) (string, error) {
 		return absPath, err
 	}
 
-	return absPath, fmt.Errorf("error while creating cgroup: %s", err)
+	return absPath, err
 }
 
 func applyCgroup(pid int, cgroupPath string) error {

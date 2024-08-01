@@ -23,6 +23,7 @@ func NewCgroupManager(path string) *CgroupManager {
 
 // Apply adds given process to this cgroup
 func (c *CgroupManager) Apply(pid int) error {
+	fmt.Println(pid, c.Path)
 	for _, SubSysInstance := range c.Subsystems {
 		err := SubSysInstance.Apply(c.Path, pid)
 		if err != nil {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -48,7 +49,10 @@ func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig) {
 	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
 	defer cgroupManager.Destroy()
 	_ = cgroupManager.Set(resConf)
-	_ = cgroupManager.Apply(parent.Process.Pid)
+	err := cgroupManager.Apply(parent.Process.Pid)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	sendInitCommand(cmdArr, writePipe)
 	_ = parent.Wait()
