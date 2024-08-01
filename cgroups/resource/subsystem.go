@@ -1,7 +1,7 @@
 package resource
 
 type ResourceConfig struct {
-	MemmoryLimit string
+	MemoryLimit string
 	CpuCfsQuota  int
 	CpuSet       string
 }

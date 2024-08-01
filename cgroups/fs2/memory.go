@@ -20,7 +20,7 @@ func (m *MemorySubsystem) Name() string {
 
 // Set sets the momory limit for givn cgroup
 func (m *MemorySubsystem) Set(cgroupPath string, res *resource.ResourceConfig) error {
-	if res.MemmoryLimit == "" {
+	if res.MemoryLimit == "" {
 		return nil
 	}
 
@@ -30,7 +30,7 @@ func (m *MemorySubsystem) Set(cgroupPath string, res *resource.ResourceConfig) e
 	}
 
 	// set memory limit for thie cgroup
-	err = os.WriteFile(path.Join(subCgroupPath, "memory.max"), []byte(res.MemmoryLimit), constant.Perm0644)
+	err = os.WriteFile(path.Join(subCgroupPath, "memory.max"), []byte(res.MemoryLimit), constant.Perm0644)
 	if err != nil {
 		return fmt.Errorf("error while set memory limit for cgroup %v: %v", cgroupPath, err)
 	}

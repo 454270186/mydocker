@@ -27,4 +27,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	runCmd.Flags().BoolVarP(&handler.IsTTY, "tty", "t", false, "enable tty")
+	runCmd.Flags().StringVarP(&handler.MemoryLimit, "mem", "m", "", "memory limit")
+	runCmd.Flags().StringVarP(&handler.CpusetLimit, "cpuset", "c", "", "cpuset limit")
+	runCmd.Flags().IntVarP(&handler.CpuLimit, "cpu", "C", 0, "cpu limit")
 }

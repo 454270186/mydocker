@@ -5,12 +5,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/454270186/mydocker/cgroups"
+	"github.com/454270186/mydocker/cgroups/resource"
 	"github.com/454270186/mydocker/container"
 	"github.com/spf13/cobra"
 )
 
 var (
-	IsTTY bool
+	IsTTY       bool
+	MemoryLimit string
+	CpuLimit    int
+	CpusetLimit string
 )
 
 func RunCmdHandler(cmd *cobra.Command, args []string) {
@@ -19,10 +24,16 @@ func RunCmdHandler(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	Run(IsTTY, args)
+	resConf := &resource.ResourceConfig{
+		MemoryLimit: MemoryLimit,
+		CpuCfsQuota: CpuLimit,
+		CpuSet:      CpusetLimit,
+	}
+
+	Run(IsTTY, args, resConf)
 }
 
-func Run(tty bool, cmdArr []string) {
+func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig) {
 	parent, writePipe := container.NewParentProcess(tty)
 	if parent == nil {
 		return
@@ -30,7 +41,15 @@ func Run(tty bool, cmdArr []string) {
 	if err := parent.Start(); err != nil {
 		log.Println(err)
 	}
-	
+
+	// create cgroup manager
+	// - set resource limit
+	// - apply container pid to cgroup
+	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
+	defer cgroupManager.Destroy()
+	_ = cgroupManager.Set(resConf)
+	_ = cgroupManager.Apply(parent.Process.Pid)
+
 	sendInitCommand(cmdArr, writePipe)
 	_ = parent.Wait()
 	os.Exit(-1)
@@ -40,7 +59,7 @@ func Run(tty bool, cmdArr []string) {
 func sendInitCommand(cmdArr []string, writePipe *os.File) {
 	commands := strings.Join(cmdArr, " ")
 	log.Printf("command all is %s\n", commands)
-	
+
 	writePipe.WriteString(commands)
 	writePipe.Close()
 }
