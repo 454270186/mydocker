@@ -87,7 +87,7 @@ func setMount() {
 
 func pivotRoot(root string) error {
 	cur, _ := os.Getwd()
-	fmt.Println(cur)
+	fmt.Println(cur) // output: /root/busybox
 
 	err := syscall.Mount(root, root, "bind", syscall.MS_BIND|syscall.MS_REC, "")
 	if err != nil {
@@ -108,7 +108,7 @@ func pivotRoot(root string) error {
 	}
 
 	cur, _ = os.Getwd()
-	fmt.Println(cur)
+	fmt.Println(cur) // output: /.pivot_root/root/busybox
 
 	// 修改当前的工作目录到根目录
 	err = syscall.Chdir("/")
@@ -117,7 +117,7 @@ func pivotRoot(root string) error {
 	}
 
 	cur, _ = os.Getwd()
-	fmt.Println(cur)
+	fmt.Println(cur) // output: /
 
 	// 最后再把old_root umount了，即 umount rootfs/.pivot_root
 	// 由于当前已经是在 rootfs 下了，就不能再用上面的rootfs/.pivot_root这个路径了,现在直接用/.pivot_root这个路径即可
