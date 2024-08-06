@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"syscall"
 )
@@ -31,7 +32,12 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 
 	// pass the read pipe to child process
 	cmd.ExtraFiles = []*os.File{readPipe}
-	cmd.Dir = "/root/busybox"
+
+	// init overlayfs workspace
+	rootPath := "/root"
+	NewWorkSpace(rootPath)
+	cmd.Dir = path.Join(rootPath, "merged")
+
 	return cmd, writePipe
 }
 
@@ -54,7 +60,7 @@ func RunContainerInitProcess(commandArr []string) error {
 
 // setMount init mount point
 func setMount() {
-	pwd, err := os.Getwd()
+	pwd, err := os.Getwd() // pwd(work dir) is set when this child process was created
 	if err != nil {
 		fmt.Printf("error while get pwd: %v", err)
 		return

@@ -56,6 +56,7 @@ func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig) {
 
 	sendInitCommand(cmdArr, writePipe)
 	_ = parent.Wait()
+	container.DeleteWorkSpace("/root/")
 	os.Exit(-1)
 }
 
