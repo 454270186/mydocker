@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
 	// create pipe
 	readPipe, writePipe, err := os.Pipe()
 	if err != nil {
@@ -35,7 +35,7 @@ func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
 
 	// init overlayfs workspace
 	rootPath := "/root"
-	NewWorkSpace(rootPath)
+	NewWorkSpace(rootPath, volume)
 	cmd.Dir = path.Join(rootPath, "merged")
 
 	return cmd, writePipe

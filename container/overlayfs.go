@@ -8,10 +8,23 @@ import (
 )
 
 // NewWorkSpace creates an OverlayFS as container work space
-func NewWorkSpace(rootPath string) {
+// NOTE: NewWorkSpace is called in the parent process before the container process(child process) is created
+// For now, the container process has not been created yet, so the "container path" is "container path in host"
+func NewWorkSpace(rootPath string, volume string) {
 	createLower(rootPath)
 	createDirs(rootPath)
 	mountOverlayFS(rootPath)
+
+	if volume != "" {
+		mntPath := path.Join(rootPath, "merged")
+		hostPath, containerPath, err := volumeExtract(volume)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		mountVolume(mntPath, hostPath, containerPath)
+	}
 }
 
 // createLower uses busybox as the lower of overlayfs
@@ -79,7 +92,21 @@ func mountOverlayFS(rootPath string) {
 }
 
 // DeleteWorkSpace deletes the overlay filesystem when container exits
-func DeleteWorkSpace(rootPath string) {
+func DeleteWorkSpace(rootPath string, volume string) {
+	mntPath := path.Join(rootPath, "merged")
+
+	// 如果指定了volume则需要umount volume
+	// NOTE: 一定要要先 umount volume ，然后再删除目录，否则由于 bind mount 存在，删除临时目录会导致 volume 目录中的数据丢失。
+	if volume != "" {
+		_, containerPath, err := volumeExtract(volume)
+		if err != nil {
+			fmt.Printf("error while extract volume in DeleteWorkSpace(): %v", err)
+			return
+		}
+
+		umountVolume(mntPath, containerPath)
+	}
+
 	umountOverlayFS(path.Join(rootPath, "merged"))
 	deleteDirs(rootPath)
 }

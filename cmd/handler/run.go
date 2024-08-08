@@ -12,11 +12,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// flags of run command
 var (
 	IsTTY       bool
+
+	// cgrpup limit
 	MemoryLimit string
 	CpuLimit    int
 	CpusetLimit string
+
+	// volume
+	Volume string
 )
 
 func RunCmdHandler(cmd *cobra.Command, args []string) {
@@ -31,11 +37,11 @@ func RunCmdHandler(cmd *cobra.Command, args []string) {
 		CpuSet:      CpusetLimit,
 	}
 
-	Run(IsTTY, args, resConf)
+	Run(IsTTY, args, resConf, Volume)
 }
 
-func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig) {
-	parent, writePipe := container.NewParentProcess(tty)
+func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume string) {
+	parent, writePipe := container.NewParentProcess(tty, volume)
 	if parent == nil {
 		return
 	}
@@ -56,7 +62,7 @@ func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig) {
 
 	sendInitCommand(cmdArr, writePipe)
 	_ = parent.Wait()
-	container.DeleteWorkSpace("/root/")
+	container.DeleteWorkSpace("/root/", volume)
 	os.Exit(-1)
 }
 
