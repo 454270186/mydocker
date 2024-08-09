@@ -23,11 +23,20 @@ var (
 
 	// volume
 	Volume string
+
+	// container process detach
+	IsDetach bool
 )
 
 func RunCmdHandler(cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
 		log.Println("missing container command")
+		return
+	}
+
+	// tty and detach cannot take effect simultaneously
+	if IsTTY && IsDetach {
+		log.Println("tty and detach cannot take effect simultaneously")
 		return
 	}
 
@@ -61,9 +70,12 @@ func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume str
 	}
 
 	sendInitCommand(cmdArr, writePipe)
-	_ = parent.Wait()
-	container.DeleteWorkSpace("/root/", volume)
-	os.Exit(-1)
+
+	// 如果是tty，那么父进程等待，就是前台运行，否则就是跳过，实现后台运行
+	if tty {
+		_ = parent.Wait()
+		container.DeleteWorkSpace("/root/", volume)
+	}
 }
 
 // send init command to child process through pipe
