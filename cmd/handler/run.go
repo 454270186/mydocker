@@ -26,6 +26,9 @@ var (
 
 	// container process detach
 	IsDetach bool
+
+	// container name
+	ContainerName string
 )
 
 func RunCmdHandler(cmd *cobra.Command, args []string) {
@@ -46,15 +49,23 @@ func RunCmdHandler(cmd *cobra.Command, args []string) {
 		CpuSet:      CpusetLimit,
 	}
 
-	Run(IsTTY, args, resConf, Volume)
+	Run(IsTTY, args, resConf, Volume, ContainerName)
 }
 
-func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume string) {
+func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume string, containerName string) {
+	containerId := container.GetUUID()
+	
 	parent, writePipe := container.NewParentProcess(tty, volume)
 	if parent == nil {
 		return
 	}
 	if err := parent.Start(); err != nil {
+		log.Println(err)
+	}
+
+	// record container info
+	err := container.RecordContainerInfo(parent.Process.Pid, cmdArr, containerName, containerId)
+	if err != nil {
 		log.Println(err)
 	}
 
@@ -64,7 +75,7 @@ func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume str
 	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
 	defer cgroupManager.Destroy()
 	_ = cgroupManager.Set(resConf)
-	err := cgroupManager.Apply(parent.Process.Pid)
+	err = cgroupManager.Apply(parent.Process.Pid)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -75,6 +86,7 @@ func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume str
 	if tty {
 		_ = parent.Wait()
 		container.DeleteWorkSpace("/root/", volume)
+		container.DeleteContainerInfo(containerId)
 	}
 }
 

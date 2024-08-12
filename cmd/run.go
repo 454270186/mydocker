@@ -35,4 +35,6 @@ func init() {
 	runCmd.Flags().StringVarP(&handler.Volume, "volume", "v", "", "volume,e.g.: -v /ect/conf:/etc/conf")
 
 	runCmd.Flags().BoolVarP(&handler.IsDetach, "detach", "d", false, "detach container")
+
+	runCmd.Flags().StringVarP(&handler.ContainerName, "name", "n", "", "container name")
 }
