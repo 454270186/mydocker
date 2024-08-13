@@ -8,9 +8,11 @@ import (
 	"path"
 	"path/filepath"
 	"syscall"
+
+	"github.com/454270186/mydocker/constant"
 )
 
-func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
+func NewParentProcess(tty bool, volume, containerId string) (*exec.Cmd, *os.File) {
 	// create pipe
 	readPipe, writePipe, err := os.Pipe()
 	if err != nil {
@@ -28,6 +30,24 @@ func NewParentProcess(tty bool, volume string) (*exec.Cmd, *os.File) {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+	} else {
+		// for detached container, output its log to file
+		dirPath := fmt.Sprintf(InfoLocalFormat, containerId)
+		if err := os.MkdirAll(dirPath, constant.Perm0622); err != nil {
+			log.Printf("error while create container log dir: %v\n", err)
+			return nil, nil
+		}
+
+		logFile := fmt.Sprintf("%s-json.log", containerId)
+		stdLogFilePath := path.Join(dirPath, logFile)
+		stdLogFile, err := os.Create(stdLogFilePath)
+		if err != nil {
+			log.Printf("error while create container log file: %v\n", err)
+			return nil, nil
+		}
+
+		cmd.Stdout = stdLogFile
+		cmd.Stderr = stdLogFile
 	}
 
 	// pass the read pipe to child process

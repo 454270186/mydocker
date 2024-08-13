@@ -8,23 +8,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// psCmd represents the ps command
-var psCmd = &cobra.Command{
-	Use:   "ps",
-	Short: "List all containers",
-	Run: handler.PsCmdHandler,
+// logsCmd represents the logs command
+var logsCmd = &cobra.Command{
+	Use:   "logs",
+	Short: "Print logs of container",
+	Run: handler.LogsCmdHandler,
 }
 
 func init() {
-	rootCmd.AddCommand(psCmd)
+	rootCmd.AddCommand(logsCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// psCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// logsCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// psCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// logsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -55,7 +55,7 @@ func RunCmdHandler(cmd *cobra.Command, args []string) {
 func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume string, containerName string) {
 	containerId := container.GetUUID()
 	
-	parent, writePipe := container.NewParentProcess(tty, volume)
+	parent, writePipe := container.NewParentProcess(tty, volume, containerId)
 	if parent == nil {
 		return
 	}
