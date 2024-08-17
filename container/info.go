@@ -16,6 +16,7 @@ import (
 // Container status
 const (
 	RUNNING = "running"
+	STOP    = "stop"
 )
 
 // Default file path

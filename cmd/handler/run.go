@@ -14,7 +14,7 @@ import (
 
 // flags of run command
 var (
-	IsTTY       bool
+	IsTTY bool
 
 	// cgrpup limit
 	MemoryLimit string
@@ -43,6 +43,11 @@ func RunCmdHandler(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	if !IsTTY && !IsDetach {
+		log.Println("must choose one mode: tty or detach")
+		return
+	}
+
 	resConf := &resource.ResourceConfig{
 		MemoryLimit: MemoryLimit,
 		CpuCfsQuota: CpuLimit,
@@ -54,7 +59,7 @@ func RunCmdHandler(cmd *cobra.Command, args []string) {
 
 func Run(tty bool, cmdArr []string, resConf *resource.ResourceConfig, volume string, containerName string) {
 	containerId := container.GetUUID()
-	
+
 	parent, writePipe := container.NewParentProcess(tty, volume, containerId)
 	if parent == nil {
 		return
